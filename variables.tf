@@ -102,6 +102,36 @@ variable "intra_subnets" {
   default     = []
 }
 
+variable "public_inbound_acls" {
+  description = "Public subnets inbound network ACLs"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL inbound"]
+}
+
+variable "public_outbound_acls" {
+  description = "Public subnets outbound network ACLs"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL outbound"]
+}
+
+variable "private_inbound_acls" {
+  description = "Private subnets inbound network ACLs"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL inbound"]
+}
+
+variable "private_outbound_acls" {
+  description = "Private subnets outbound network ACLs"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL outbound"]
+}
+
+variable "intra_inbound_acls" {
+  description = "Intra subnets inbound network ACLs"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL inbound"]
+}
+
+variable "intra_outbound_acls" {
+  description = "Intra subnets outbound network ACLs"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL outbound"]
+}
+
 variable "create_database_subnet_group" {
   description = "Controls if database subnet group should be created"
   default     = true
