@@ -274,7 +274,7 @@ resource "aws_default_network_acl" "default" {
 # Public Network ACLs
 ########################
 resource "aws_network_acl" "public" {
-  count = "${var.create_vpc ? 1 : 0}"
+  count = "${var.create_vpc && length(var.public_subnets) > 0 ? 1 : 0}"
 
   vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
   subnet_ids = ["${aws_subnet.public.*.id}"]
@@ -283,7 +283,7 @@ resource "aws_network_acl" "public" {
 }
 
 resource "aws_network_acl_rule" "public_inbound" {
-  count = "${var.create_vpc ? length(var.public_inbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.public_subnets) > 0 ? length(var.public_inbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.public.id}"
 
@@ -297,7 +297,7 @@ resource "aws_network_acl_rule" "public_inbound" {
 }
 
 resource "aws_network_acl_rule" "public_outbound" {
-  count = "${var.create_vpc ? length(var.public_outbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.public_subnets) > 0 ? length(var.public_outbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.public.id}"
 
@@ -314,7 +314,7 @@ resource "aws_network_acl_rule" "public_outbound" {
 # Private Network ACLs
 #######################
 resource "aws_network_acl" "private" {
-  count = "${var.create_vpc ? 1 : 0}"
+  count = "${var.create_vpc && length(var.private_subnets) > 0 ? 1 : 0}"
 
   vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
   subnet_ids = ["${aws_subnet.private.*.id}"]
@@ -323,7 +323,7 @@ resource "aws_network_acl" "private" {
 }
 
 resource "aws_network_acl_rule" "private_inbound" {
-  count = "${var.create_vpc ? length(var.private_inbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.private_subnets) > 0 ? length(var.private_inbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.private.id}"
 
@@ -337,7 +337,7 @@ resource "aws_network_acl_rule" "private_inbound" {
 }
 
 resource "aws_network_acl_rule" "private_outbound" {
-  count = "${var.create_vpc ? length(var.private_outbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.private_subnets) > 0 ? length(var.private_outbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.private.id}"
 
@@ -354,7 +354,7 @@ resource "aws_network_acl_rule" "private_outbound" {
 # Intra Network ACLs
 ########################
 resource "aws_network_acl" "intra" {
-  count = "${var.create_vpc ? 1 : 0}"
+  count = "${var.create_vpc && length(var.intra_subnets) > 0 ? 1 : 0}"
 
   vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
   subnet_ids = ["${aws_subnet.intra.*.id}"]
@@ -363,7 +363,7 @@ resource "aws_network_acl" "intra" {
 }
 
 resource "aws_network_acl_rule" "intra_inbound" {
-  count = "${var.create_vpc ? length(var.intra_inbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.intra_subnets) > 0 ? length(var.intra_inbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.intra.id}"
 
@@ -377,7 +377,7 @@ resource "aws_network_acl_rule" "intra_inbound" {
 }
 
 resource "aws_network_acl_rule" "intra_outbound" {
-  count = "${var.create_vpc ? length(var.intra_outbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.intra_subnets) > 0 ? length(var.intra_outbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.intra.id}"
 
@@ -394,7 +394,7 @@ resource "aws_network_acl_rule" "intra_outbound" {
 # Database Network ACLs
 ########################
 resource "aws_network_acl" "database" {
-  count = "${var.create_vpc ? 1 : 0}"
+  count = "${var.create_vpc && length(var.database_subnets) > 0 ? 1 : 0}"
 
   vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
   subnet_ids = ["${aws_subnet.database.*.id}"]
@@ -403,7 +403,7 @@ resource "aws_network_acl" "database" {
 }
 
 resource "aws_network_acl_rule" "database_inbound" {
-  count = "${var.create_vpc ? length(var.database_inbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.database_subnets) > 0 ? length(var.database_inbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.database.id}"
 
@@ -417,7 +417,7 @@ resource "aws_network_acl_rule" "database_inbound" {
 }
 
 resource "aws_network_acl_rule" "database_outbound" {
-  count = "${var.create_vpc ? length(var.database_outbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.database_subnets) > 0 ? length(var.database_outbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.database.id}"
 
@@ -434,7 +434,7 @@ resource "aws_network_acl_rule" "database_outbound" {
 # Redshift Network ACLs
 ########################
 resource "aws_network_acl" "redshift" {
-  count = "${var.create_vpc ? 1 : 0}"
+  count = "${var.create_vpc && length(var.redshift_subnets) > 0 ? 1 : 0}"
 
   vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
   subnet_ids = ["${aws_subnet.redshift.*.id}"]
@@ -443,7 +443,7 @@ resource "aws_network_acl" "redshift" {
 }
 
 resource "aws_network_acl_rule" "redshift_inbound" {
-  count = "${var.create_vpc ? length(var.redshift_inbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.redshift_subnets) > 0 ? length(var.redshift_inbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.redshift.id}"
 
@@ -457,7 +457,7 @@ resource "aws_network_acl_rule" "redshift_inbound" {
 }
 
 resource "aws_network_acl_rule" "redshift_outbound" {
-  count = "${var.create_vpc ? length(var.redshift_outbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.redshift_subnets) > 0 ? length(var.redshift_outbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.redshift.id}"
 
@@ -474,7 +474,7 @@ resource "aws_network_acl_rule" "redshift_outbound" {
 # Elasticache Network ACLs
 ###########################
 resource "aws_network_acl" "elasticache" {
-  count = "${var.create_vpc ? 1 : 0}"
+  count = "${var.create_vpc && length(var.elasticache_subnets) > 0 ? 1 : 0}"
 
   vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
   subnet_ids = ["${aws_subnet.elasticache.*.id}"]
@@ -483,7 +483,7 @@ resource "aws_network_acl" "elasticache" {
 }
 
 resource "aws_network_acl_rule" "elasticache_inbound" {
-  count = "${var.create_vpc ? length(var.elasticache_inbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.elasticache_subnets) > 0 ? length(var.elasticache_inbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.elasticache.id}"
 
@@ -497,7 +497,7 @@ resource "aws_network_acl_rule" "elasticache_inbound" {
 }
 
 resource "aws_network_acl_rule" "elasticache_outbound" {
-  count = "${var.create_vpc ? length(var.elasticache_outbound_acl_rules) / 7 : 0}"
+  count = "${var.create_vpc && length(var.elasticache_subnets) > 0 ? length(var.elasticache_outbound_acl_rules) / 7 : 0}"
 
   network_acl_id = "${aws_network_acl.elasticache.id}"
 
