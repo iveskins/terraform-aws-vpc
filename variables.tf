@@ -102,6 +102,66 @@ variable "intra_subnets" {
   default     = []
 }
 
+variable "public_inbound_acl_rules" {
+  description = "Public subnets inbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL inbound"]
+}
+
+variable "public_outbound_acl_rules" {
+  description = "Public subnets outbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL outbound"]
+}
+
+variable "private_inbound_acl_rules" {
+  description = "Private subnets inbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL inbound"]
+}
+
+variable "private_outbound_acl_rules" {
+  description = "Private subnets outbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL outbound"]
+}
+
+variable "intra_inbound_acl_rules" {
+  description = "Intra subnets inbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL inbound"]
+}
+
+variable "intra_outbound_acl_rules" {
+  description = "Intra subnets outbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL outbound"]
+}
+
+variable "database_inbound_acl_rules" {
+  description = "database subnets inbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL inbound"]
+}
+
+variable "database_outbound_acl_rules" {
+  description = "database subnets outbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL outbound"]
+}
+
+variable "redshift_inbound_acl_rules" {
+  description = "redshift subnets inbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL inbound"]
+}
+
+variable "redshift_outbound_acl_rules" {
+  description = "redshift subnets outbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL outbound"]
+}
+
+variable "elasticache_inbound_acl_rules" {
+  description = "elasticache subnets inbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL inbound"]
+}
+
+variable "elasticache_outbound_acl_rules" {
+  description = "elasticache subnets outbound network ACL rules"
+  default     = ["100", "allow", 0, 0, "-1", "0.0.0.0/0", "Allow ALL outbound"]
+}
+
 variable "create_database_subnet_group" {
   description = "Controls if database subnet group should be created"
   default     = true
@@ -265,6 +325,36 @@ variable "elasticache_subnet_tags" {
 
 variable "intra_subnet_tags" {
   description = "Additional tags for the intra subnets"
+  default     = {}
+}
+
+variable "public_acl_tags" {
+  description = "Additional tags for the public subnets network ACL"
+  default     = {}
+}
+
+variable "private_acl_tags" {
+  description = "Additional tags for the private subnets network ACL"
+  default     = {}
+}
+
+variable "intra_acl_tags" {
+  description = "Additional tags for the intra subnets network ACL"
+  default     = {}
+}
+
+variable "database_acl_tags" {
+  description = "Additional tags for the database subnets network ACL"
+  default     = {}
+}
+
+variable "redshift_acl_tags" {
+  description = "Additional tags for the redshift subnets network ACL"
+  default     = {}
+}
+
+variable "elasticache_acl_tags" {
+  description = "Additional tags for the elasticache subnets network ACL"
   default     = {}
 }
 

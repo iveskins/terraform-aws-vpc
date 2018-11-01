@@ -261,6 +261,255 @@ resource "aws_subnet" "intra" {
   tags = "${merge(map("Name", format("%s-intra-%s", var.name, element(var.azs, count.index))), var.tags, var.intra_subnet_tags)}"
 }
 
+#######################
+# Default Network ACLs
+#######################
+resource "aws_default_network_acl" "default" {
+  count = "${var.create_vpc ? 1 : 0}"
+
+  default_network_acl_id = "${element(concat(aws_vpc.this.*.default_network_acl_id, list("")), 0)}"
+}
+
+########################
+# Public Network ACLs
+########################
+resource "aws_network_acl" "public" {
+  count = "${var.create_vpc && length(var.public_subnets) > 0 ? 1 : 0}"
+
+  vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
+  subnet_ids = ["${aws_subnet.public.*.id}"]
+
+  tags = "${merge(var.tags, var.public_acl_tags, map("Name", format("%s-public", var.name)))}"
+}
+
+resource "aws_network_acl_rule" "public_inbound" {
+  count = "${var.create_vpc && length(var.public_subnets) > 0 ? length(var.public_inbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.public.id}"
+
+  egress      = false
+  rule_number = "${element(var.public_inbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.public_inbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.public_inbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.public_inbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.public_inbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.public_inbound_acl_rules, count.index * 7 + 5)}"
+}
+
+resource "aws_network_acl_rule" "public_outbound" {
+  count = "${var.create_vpc && length(var.public_subnets) > 0 ? length(var.public_outbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.public.id}"
+
+  egress      = true
+  rule_number = "${element(var.public_outbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.public_outbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.public_outbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.public_outbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.public_outbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.public_outbound_acl_rules, count.index * 7 + 5)}"
+}
+
+#######################
+# Private Network ACLs
+#######################
+resource "aws_network_acl" "private" {
+  count = "${var.create_vpc && length(var.private_subnets) > 0 ? 1 : 0}"
+
+  vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
+  subnet_ids = ["${aws_subnet.private.*.id}"]
+
+  tags = "${merge(var.tags, var.private_acl_tags, map("Name", format("%s-private", var.name)))}"
+}
+
+resource "aws_network_acl_rule" "private_inbound" {
+  count = "${var.create_vpc && length(var.private_subnets) > 0 ? length(var.private_inbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.private.id}"
+
+  egress      = false
+  rule_number = "${element(var.private_inbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.private_inbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.private_inbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.private_inbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.private_inbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.private_inbound_acl_rules, count.index * 7 + 5)}"
+}
+
+resource "aws_network_acl_rule" "private_outbound" {
+  count = "${var.create_vpc && length(var.private_subnets) > 0 ? length(var.private_outbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.private.id}"
+
+  egress      = true
+  rule_number = "${element(var.private_outbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.private_outbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.private_outbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.private_outbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.private_outbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.private_outbound_acl_rules, count.index * 7 + 5)}"
+}
+
+########################
+# Intra Network ACLs
+########################
+resource "aws_network_acl" "intra" {
+  count = "${var.create_vpc && length(var.intra_subnets) > 0 ? 1 : 0}"
+
+  vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
+  subnet_ids = ["${aws_subnet.intra.*.id}"]
+
+  tags = "${merge(var.tags, var.intra_acl_tags, map("Name", format("%s-intra", var.name)))}"
+}
+
+resource "aws_network_acl_rule" "intra_inbound" {
+  count = "${var.create_vpc && length(var.intra_subnets) > 0 ? length(var.intra_inbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.intra.id}"
+
+  egress      = false
+  rule_number = "${element(var.intra_inbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.intra_inbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.intra_inbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.intra_inbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.intra_inbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.intra_inbound_acl_rules, count.index * 7 + 5)}"
+}
+
+resource "aws_network_acl_rule" "intra_outbound" {
+  count = "${var.create_vpc && length(var.intra_subnets) > 0 ? length(var.intra_outbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.intra.id}"
+
+  egress      = true
+  rule_number = "${element(var.intra_outbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.intra_outbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.intra_outbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.intra_outbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.intra_outbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.intra_outbound_acl_rules, count.index * 7 + 5)}"
+}
+
+########################
+# Database Network ACLs
+########################
+resource "aws_network_acl" "database" {
+  count = "${var.create_vpc && length(var.database_subnets) > 0 ? 1 : 0}"
+
+  vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
+  subnet_ids = ["${aws_subnet.database.*.id}"]
+
+  tags = "${merge(var.tags, var.database_acl_tags, map("Name", format("%s-database", var.name)))}"
+}
+
+resource "aws_network_acl_rule" "database_inbound" {
+  count = "${var.create_vpc && length(var.database_subnets) > 0 ? length(var.database_inbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.database.id}"
+
+  egress      = false
+  rule_number = "${element(var.database_inbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.database_inbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.database_inbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.database_inbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.database_inbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.database_inbound_acl_rules, count.index * 7 + 5)}"
+}
+
+resource "aws_network_acl_rule" "database_outbound" {
+  count = "${var.create_vpc && length(var.database_subnets) > 0 ? length(var.database_outbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.database.id}"
+
+  egress      = true
+  rule_number = "${element(var.database_outbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.database_outbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.database_outbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.database_outbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.database_outbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.database_outbound_acl_rules, count.index * 7 + 5)}"
+}
+
+########################
+# Redshift Network ACLs
+########################
+resource "aws_network_acl" "redshift" {
+  count = "${var.create_vpc && length(var.redshift_subnets) > 0 ? 1 : 0}"
+
+  vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
+  subnet_ids = ["${aws_subnet.redshift.*.id}"]
+
+  tags = "${merge(var.tags, var.redshift_acl_tags, map("Name", format("%s-redshift", var.name)))}"
+}
+
+resource "aws_network_acl_rule" "redshift_inbound" {
+  count = "${var.create_vpc && length(var.redshift_subnets) > 0 ? length(var.redshift_inbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.redshift.id}"
+
+  egress      = false
+  rule_number = "${element(var.redshift_inbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.redshift_inbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.redshift_inbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.redshift_inbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.redshift_inbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.redshift_inbound_acl_rules, count.index * 7 + 5)}"
+}
+
+resource "aws_network_acl_rule" "redshift_outbound" {
+  count = "${var.create_vpc && length(var.redshift_subnets) > 0 ? length(var.redshift_outbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.redshift.id}"
+
+  egress      = true
+  rule_number = "${element(var.redshift_outbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.redshift_outbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.redshift_outbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.redshift_outbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.redshift_outbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.redshift_outbound_acl_rules, count.index * 7 + 5)}"
+}
+
+###########################
+# Elasticache Network ACLs
+###########################
+resource "aws_network_acl" "elasticache" {
+  count = "${var.create_vpc && length(var.elasticache_subnets) > 0 ? 1 : 0}"
+
+  vpc_id     = "${element(concat(aws_vpc.this.*.id, list("")), 0)}"
+  subnet_ids = ["${aws_subnet.elasticache.*.id}"]
+
+  tags = "${merge(var.tags, var.elasticache_acl_tags, map("Name", format("%s-elasticache", var.name)))}"
+}
+
+resource "aws_network_acl_rule" "elasticache_inbound" {
+  count = "${var.create_vpc && length(var.elasticache_subnets) > 0 ? length(var.elasticache_inbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.elasticache.id}"
+
+  egress      = false
+  rule_number = "${element(var.elasticache_inbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.elasticache_inbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.elasticache_inbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.elasticache_inbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.elasticache_inbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.elasticache_inbound_acl_rules, count.index * 7 + 5)}"
+}
+
+resource "aws_network_acl_rule" "elasticache_outbound" {
+  count = "${var.create_vpc && length(var.elasticache_subnets) > 0 ? length(var.elasticache_outbound_acl_rules) / 7 : 0}"
+
+  network_acl_id = "${aws_network_acl.elasticache.id}"
+
+  egress      = true
+  rule_number = "${element(var.elasticache_outbound_acl_rules, count.index * 7 + 0)}"
+  rule_action = "${element(var.elasticache_outbound_acl_rules, count.index * 7 + 1)}"
+  from_port   = "${element(var.elasticache_outbound_acl_rules, count.index * 7 + 2)}"
+  to_port     = "${element(var.elasticache_outbound_acl_rules, count.index * 7 + 3)}"
+  protocol    = "${element(var.elasticache_outbound_acl_rules, count.index * 7 + 4)}"
+  cidr_block  = "${element(var.elasticache_outbound_acl_rules, count.index * 7 + 5)}"
+}
+
 ##############
 # NAT Gateway
 ##############
